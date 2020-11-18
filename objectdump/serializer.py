@@ -30,10 +30,10 @@ class PerObjectSerializer(object):
             concrete_obj = obj._meta.concrete_model
             names = [x.attname for x in
                                 concrete_obj._meta.local_fields
-                                if x.rel is None]
+                                if x.concrete]
             names += [x.attname[:-3] for x in
                                 concrete_obj._meta.local_fields
-                                if x.rel is not None]
+                                if not x.concrete]
             names += [getattr(x, 'attname') for x in concrete_obj._meta.many_to_many if hasattr(x, 'attname')]
             selected_fields = set(names)
         if self.use_gfks:
@@ -91,7 +91,7 @@ class PerObjectSerializer(object):
             concrete_model = obj._meta.concrete_model
             for field in concrete_model._meta.local_fields:
                 if field.serialize:
-                    if field.rel is None:
+                    if not field.is_relation:
                         if self.selected_fields is None or field.attname in self.selected_fields:
                             self.handle_field(obj, field)
                     else:
@@ -102,9 +102,11 @@ class PerObjectSerializer(object):
                     if self.selected_fields is None or field.attname in self.selected_fields:
                         self.handle_m2m_field(obj, field)
             if self.use_gfks:
-                for field in concrete_model._meta.virtual_fields:
+                # Ref: https://docs.djangoproject.com/en/1.10/_modules/django/db/models/options/
+                # Looks like a simple rename from "_meta.virtual_fields" to "_meta.private_fields"
+                for field in concrete_model._meta.private_fields:
                     if self.selected_fields is None or field.name in self.selected_fields:
-                            self.handle_gfk_field(obj, field)
+                        self.handle_gfk_field(obj, field)
             self.end_object(obj)
             if self.first:
                 self.first = False

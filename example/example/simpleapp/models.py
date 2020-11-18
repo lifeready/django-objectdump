@@ -5,18 +5,11 @@
 ``django.core.serializers`` provides interfaces to converting Django
 ``QuerySet`` objects to and from "flat" data (i.e. strings).
 """
-from __future__ import unicode_literals
-
-from decimal import Decimal
-
 from django.db import models
-from django.utils import six
-from django.utils.encoding import python_2_unicode_compatible
-from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
-@python_2_unicode_compatible
 class Category(models.Model):
     name = models.CharField(max_length=20)
 
@@ -27,7 +20,6 @@ class Category(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Author(models.Model):
     name = models.CharField(max_length=20)
 
@@ -38,7 +30,6 @@ class Author(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Tag(models.Model):
     name = models.CharField(max_length=20)
 
@@ -49,20 +40,18 @@ class Tag(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class TaggedItem(models.Model):
-    tag = models.ForeignKey(Tag)
-    content_type = models.ForeignKey(ContentType)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def __str__(self):
         return "Tag: %s, Model: %s" % (self.tag, self.content_object)
 
 
-@python_2_unicode_compatible
 class Article(models.Model):
-    author = models.ForeignKey(Author)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     headline = models.CharField(max_length=50)
     pub_date = models.DateTimeField()
     categories = models.ManyToManyField(Category)
@@ -74,9 +63,8 @@ class Article(models.Model):
         return self.headline
 
 
-@python_2_unicode_compatible
 class TaggedArticle(models.Model):
-    author = models.ForeignKey(Author)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     headline = models.CharField(max_length=50)
     pub_date = models.DateTimeField()
     categories = models.ManyToManyField(Category)
@@ -88,16 +76,14 @@ class TaggedArticle(models.Model):
         return self.headline
 
 
-@python_2_unicode_compatible
 class AuthorProfile(models.Model):
-    author = models.OneToOneField(Author, primary_key=True)
+    author = models.OneToOneField(Author, primary_key=True, on_delete=models.CASCADE)
     date_of_birth = models.DateField()
 
     def __str__(self):
         return "Profile of %s" % self.author
 
 
-@python_2_unicode_compatible
 class Actor(models.Model):
     name = models.CharField(max_length=20, primary_key=True)
 
