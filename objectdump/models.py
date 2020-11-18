@@ -30,8 +30,16 @@ def get_reverse_relations(obj):
     Return all the related fields for an object
     """
     # These are the reverse relations. Typically show up as `<model_name>_set`
-    related_objs = obj._meta.get_all_related_objects()
-    return [rel.get_accessor_name() for rel in related_objs]
+    related_objs = [field for field in obj._meta.get_fields() if field.is_relation]
+    
+    ret = []
+    for rel in related_objs:
+        if rel.one_to_many:
+            name = rel.get_accessor_name()
+        else:
+            name = rel.name
+        ret.append(name)
+    return ret
 
 
 def get_many_to_many(obj):
@@ -62,7 +70,7 @@ def get_apps_and_models(appmodel_list):
                 except ImproperlyConfigured:
                     raise Exception('Unknown app specified: %s' % item)
         except Exception as e:
-            print e
+            print(e)
             continue
     return appset, modelset
 
@@ -72,7 +80,7 @@ class ObjectFilter(object):
     Handles all the stuff for excluding/including models and apps
     """
     def __init__(self, primary_model, exclude_list=None, include_list=None):
-        if isinstance(primary_model, basestring):
+        if isinstance(primary_model, str):
             self.primary_model = get_model(*primary_model.split("."))
         else:
             self.primary_model = primary_model

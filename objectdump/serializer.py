@@ -91,7 +91,7 @@ class PerObjectSerializer(object):
             concrete_model = obj._meta.concrete_model
             for field in concrete_model._meta.local_fields:
                 if field.serialize:
-                    if field.rel is None:
+                    if not field.is_relation:
                         if self.selected_fields is None or field.attname in self.selected_fields:
                             self.handle_field(obj, field)
                     else:
@@ -104,7 +104,7 @@ class PerObjectSerializer(object):
             if self.use_gfks:
                 for field in concrete_model._meta.virtual_fields:
                     if self.selected_fields is None or field.name in self.selected_fields:
-                            self.handle_gfk_field(obj, field)
+                        self.handle_gfk_field(obj, field)
             self.end_object(obj)
             if self.first:
                 self.first = False

@@ -12,23 +12,23 @@ def toposort(data):
         v.discard(k)
     # Find all items that don't depend on anything.
     try:
-        extra_items_in_deps = reduce(set.union, data.itervalues()) - set(data.iterkeys())
+        extra_items_in_deps = reduce(set.union, data.values()) - set(data.keys())
     except Exception:
         extra_items_in_deps = []
     # Add empty dependences where needed
     data.update(dict([(item, set()) for item in extra_items_in_deps]))
     while True:
-        ordered = set(item for item, dep in data.iteritems() if not dep)
+        ordered = set(item for item, dep in data.items() if not dep)
         if not ordered:
             break
         for o in ordered:
             yield o
         data = dict([(item, (dep - ordered))
-                        for item, dep in data.iteritems()
+                        for item, dep in data.items()
                             if item not in ordered])
     if data:
-        print "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
-        print "\n-------------------------\n\n"
+        print("Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.items()))
+        print("\n-------------------------\n\n")
         raise Exception()
 
 
@@ -70,7 +70,7 @@ def topological_sort(graph_unsorted):
             for edge in edges:
                 if edge in graph_unsorted:
                     if node in graph_unsorted[edge]:
-                        print "Circular dependency", type(node), node.id, "and", type(edge), edge.id
+                        print("Circular dependency", type(node), node.id, "and", type(edge), edge.id)
                     break
             else:
                 acyclic = True
