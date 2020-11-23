@@ -41,7 +41,6 @@ def get_reverse_relations(obj):
     return [rel.get_accessor_name() for rel in related_objs]
 
 
-
 def get_many_to_many(obj):
     return [m2m_rel.name for m2m_rel in obj._meta.many_to_many]
 
