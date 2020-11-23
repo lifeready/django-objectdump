@@ -27,7 +27,7 @@ Settings
                'ignore': False,
                'fk_fields': True,  # or False, or ['whitelist', 'of', 'fks']
                'm2m_fields': True,  # or False, or ['whitelist', 'of', 'm2m fields']
-               'addl_relations': []  # callable or 'othermodel_set.all' strings
+               'addl_relations': []  # additional relations, callable or 'othermodel_set.all' strings
            }
        }
    }
@@ -43,7 +43,7 @@ Settings
     If ``False``\ , do not include related objects through many-to-many fields. Otherwise, a white-list of many-to-many field names to include related objects.
 
 ``addl_relations``
-    A list of callables, which get passed an object, or strings in Django template syntax (``'author_set.all.0'`` becomes ``'object.author_set.all.0'`` and evaluates to ``object.author_set.all()[0]``\ )
+    Additional relations, a list of callables, which get passed an object, or strings in Django template syntax (``'author_set.all.0'`` becomes ``'object.author_set.all.0'`` and evaluates to ``object.author_set.all()[0]``\ )
 
 Options
 =======
@@ -93,7 +93,40 @@ Options
 
     The natural type of the id(s) specified. Options are: ``int``, ``unicode``, ``long``
 
+``--nocycle``
+    **Default:** ``False``
+
+    If True, will fail on any cyclic foreign key dependencies. Cyclic dependencies are usually fine in fixtures because the "loaddata" command temporarily disables the FK constraints.
+
 ``--debug``
     **Default:** ``False``
 
     Output debug information. Shows what related objects each object generates. Use with ``--verbosity 2`` to also see which fields are the link.
+
+Demo app and tests
+=======
+
+To setup the demo app:
+```
+cd examples
+
+[setup your virtual env, eg. virtualenv -p /usr/bin/python3.7 .venv]
+
+pip install -r requirements.txt
+
+./manage.py migrate
+
+./manage.py createsuperuser
+
+./manage.py runserver
+
+```
+
+You can now visit: http://localhost:8000/admin
+
+
+To run the tests:
+```
+./manage.py test
+```
+
