@@ -1,4 +1,4 @@
-from django.utils import six
+from io import StringIO
 from collections import defaultdict
 from django.contrib.contenttypes.fields import GenericRelation
 
@@ -67,7 +67,7 @@ class PerObjectSerializer(object):
 
         """
         self.options = options
-        self.stream = options.pop("stream", six.StringIO())
+        self.stream = options.pop("stream", StringIO())
         self.use_natural_keys = options.pop("use_natural_keys", False)
         self.use_natural_foreign_keys = options.pop('use_natural_foreign_keys', False)
         self.use_natural_primary_keys = options.pop('use_natural_primary_keys', False)
