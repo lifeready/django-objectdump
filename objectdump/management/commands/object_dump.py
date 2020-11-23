@@ -275,7 +275,6 @@ class Command(BaseCommand):
                     print("Error processing FK:", e, obj, field.name)
         return output
 
-    # TODO Port over to Python 3 as well
     def process_genericforeignkeys(self, obj, obj_filter=None):
         output = []
         obj_key = get_key(obj, include_pk=self.use_obj_key)
@@ -360,7 +359,6 @@ class Command(BaseCommand):
             fk_objs = self.process_foreignkeys(obj, obj_filter)
             for fk_obj in fk_objs:
                 self.queue.append((fk_obj, depth + 1))
-            # TODO port to Python 3
             gfk_objs = self.process_genericforeignkeys(obj, obj_filter)
             for gfk_obj in gfk_objs:
                 self.queue.append((gfk_obj, depth + 1))
