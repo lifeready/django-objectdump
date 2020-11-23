@@ -6,7 +6,7 @@ http://blog.jupo.org/2012/04/06/topological-sorting-acyclic-directed-graphs/
 def get_item_key(item):
     return f"{item.__class__.__module__}.{item.__class__.__name__}.{item.pk}"
 
-def toposort(data):
+def toposort(data, allow_cycles=False):
     from functools import reduce
 
     # Ignore self dependencies.
@@ -29,10 +29,14 @@ def toposort(data):
         data = dict([(item, (dep - ordered))
                         for item, dep in data.items()
                             if item not in ordered])
-    if data:
-        print("Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.items()))
-        print("\n-------------------------\n\n")
-        raise Exception()
+    if allow_cycles:
+        for item, dep in data.items():
+            yield item
+    else:
+        if data:
+            print("Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.items()))
+            print("\n-------------------------\n\n")
+            raise Exception()
 
 
 def topological_sort(graph_unsorted):

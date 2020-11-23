@@ -1,26 +1,21 @@
 import pprint
+from collections import Iterable, defaultdict
 from itertools import chain
-from optparse import make_option
-from collections import defaultdict, Iterable
-from django.db import DEFAULT_DB_ALIAS
 
+from django.apps import apps
 from django.core.exceptions import FieldError, ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
+from django.db import DEFAULT_DB_ALIAS, models
 from django.db.models import ForeignKey
-from django.apps import apps
-from django.db import models
 from django.template import Variable
 
-from ...models import (
-    get_key,
-    get_reverse_relations,
-    get_many_to_many,
-    ObjectFilter,
-)
 # If importing MODEL_SETTINGS directly, the tests can't update the settings between tests.
 from ... import settings
-from ...serializer import get_serializer
 from ...diagram import make_dot
+from ...models import (ObjectFilter, get_key, get_many_to_many,
+                       get_reverse_relations)
+from ...serializer import get_serializer
+from ...topological_sort import toposort
 
 
 def get_fields():
@@ -140,6 +135,13 @@ class Command(BaseCommand):
             default=None,
             type=str,
             help="Output a GraphViz (.dot) diagram of the object dependencies to the passed filepath.",
+        )
+        parser.add_argument(
+            "--nocycles",
+            action="store_true",
+            dest="nocycles",
+            default=False,
+            help="Raise exception if there are cyclic FK references in the DB entities. Usually this is not an issue because 'loaddata' management command temporarily disables FK constraints.",
         )
 
     def process_additional_relations(self, obj, limit=None):
@@ -376,6 +378,7 @@ class Command(BaseCommand):
         debug = options.get("debug")
         model_diagram_file = options.get("modeldiagram")
         object_diagram_file = options.get("objdiagram")
+        no_cycles = options.get("nocycles")
 
         SerializerClass = get_serializer(format)()  # NOQA
         self.use_gfks = hasattr(SerializerClass, 'handle_gfk_field')
@@ -411,8 +414,7 @@ class Command(BaseCommand):
 
         # Order serialization so that dependents come after dependencies.
         depends_on = dict(self.depends_on)
-        from ...topological_sort import toposort
-        serialization_order = toposort(depends_on)
+        serialization_order = toposort(depends_on, allow_cycles=not no_cycles)
         try:
             try:
                 self.stdout.ending = None
